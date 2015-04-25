@@ -1,0 +1,15 @@
+[package]
+
+name = "cast_iron"
+version = "0.0.1"
+authors = [ "Tupshin Harper <tupshin@tupshin.com>" ]
+
+[[bin]]
+
+name = "hello_world"
+
+[dependencies]
+conduit = "0.7.3"
+civet = "0.7.6"
+conduit-router = "0.7.1"
+cql_ffi = "*"
