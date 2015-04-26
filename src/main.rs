@@ -5,10 +5,10 @@ extern crate conduit_router;
 extern crate cql_ffi;
 
 use std::collections::HashMap;
-use std::io::{self, Cursor};
+use std::io::Cursor;
 use std::sync::mpsc::channel;
 
-use cql_ffi::{CassCluster,CassSession};
+use cql_ffi::{CassCluster,CassSession,CassError,CassPrepared};
 use civet::{Config, response, Server};
 use conduit::{Request, Response};
 use conduit_router::{RouteBuilder, RequestParams};
@@ -21,6 +21,8 @@ fn main() {
                         .set_load_balance_round_robin().unwrap();
 
     let session_future = CassSession::new().connect(cluster).wait();
+    
+    let all_prepared:Vec<CassPrepared> = Vec::new();
 
     match session_future {
    		Err(err) => panic!("{:?}",err),
@@ -28,7 +30,7 @@ fn main() {
 			println!("session established");
 			
 		    let mut router = RouteBuilder::new();
-    		router.get("/prepare/:statement", move |r: &mut Request| prepare(r, &session));
+    		router.get("/prepare/:statement", move |r: &mut Request| prepare(r, &session, &all_prepared));
     		let _server = Server::start(Config { port: 8888, threads: 1 }, router);
     		let (_tx, rx) = channel::<()>();
     		rx.recv().unwrap();
@@ -36,9 +38,11 @@ fn main() {
     }
 }
 
-fn prepare(req: &mut Request, session: &CassSession) -> io::Result<Response> {
-	let name = req.params().find("statement").unwrap();
-    let bytes = format!("Preparing: {}!", name).into_bytes();
+fn prepare(req: &mut Request, session: &CassSession, all_prepared:&Vec<CassPrepared>) -> Result<Response,CassError> {
+	let statement = req.params().find("statement").unwrap();
+	let prepared:CassPrepared = try!(try!(session.prepare(statement)).wait());
+	//prepared.
+    let bytes = format!("Preparing: {}!", statement).into_bytes();
      Ok(response(200, HashMap::new(), Cursor::new(bytes)))
 }
 
