@@ -30,8 +30,8 @@ fn main() {
 			println!("session established");
 			
 		    let mut router = RouteBuilder::new();
-    		router.get("/prepare/:statement", move |r: &mut Request| prepare(r, &session, &all_prepared));
-    		router.get("/execute/:statement_id", move |r: &mut Request| execute(r, &session, &all_prepared));
+    		router.get("/prepare/:statement", |r: &mut Request| prepare(r, &session, &all_prepared));
+    		router.get("/execute/:statement_id", |r: &mut Request| execute(r, &session, &all_prepared));
     		let _server = Server::start(Config { port: 8888, threads: 1 }, router);
     		let (_tx, rx) = channel::<()>();
     		rx.recv().unwrap();
