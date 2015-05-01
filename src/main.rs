@@ -15,8 +15,8 @@ use conduit::{Request, Response};
 use conduit_router::{RouteBuilder, RequestParams};
 
 struct CassEnv {
-	pub session:CassSession,
-	pub prepared:Vec<CassPrepared>
+    pub session:CassSession,
+    pub prepared:Vec<CassPrepared>
 }
 
 const CONTACT_POINTS:&'static str = "127.0.0.1";
@@ -30,23 +30,20 @@ fn main() {
 
 
     match session_future {
-   		Err(err) => panic!("{:?}",err),
+        Err(err) => panic!("{:?}",err),
         Ok(session) => {
-        	let cass_env = Arc::new(CassEnv{session:session,prepared:vec!()});
-
-			println!("session established");
-		    let mut router = RouteBuilder::new();
-
-		    let prepare_env = cass_env.clone();
-		    let execute_env = cass_env.clone();
-
-		    router.get("/prepare/:statement", move |r: &mut Request| prepare(r, &prepare_env));
-    		router.get("/execute/:statement_id", move |r: &mut Request| execute(r, &execute_env));
-
-    		let _server = Server::start(Config { port: 8888, threads: 1 }, router);
-    		let (_tx, rx) = channel::<()>();
-    		rx.recv().unwrap();
-		}
+            let cass_env = Arc::new(CassEnv{session:session,prepared:vec!()});
+            println!("session established");
+            let mut router = RouteBuilder::new();
+               
+            let prepare_env = cass_env.clone();
+            let execute_env = cass_env.clone();
+            router.get("/prepare/:statement", move |r: &mut Request| prepare(r, &prepare_env));
+            router.get("/execute/:statement_id", move |r: &mut Request| execute(r, &execute_env));
+            let _server = Server::start(Config { port: 8888, threads: 1 }, router);
+            let (_tx, rx) = channel::<()>();
+            rx.recv().unwrap();
+        }
     }
 }
 
